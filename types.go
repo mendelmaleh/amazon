@@ -1,62 +1,69 @@
 package amazon
 
-// generated with git.sr.ht/~mendelmaleh/csvgen
+// partially generated with git.sr.ht/~mendelmaleh/csvgen
 
-type ABC struct {
-	BuyerName              string `csv:"Buyer Name"`
-	GroupName              string `csv:"Group Name"`
-	OrderDate              string `csv:"Order Date"`
-	OrderId                string `csv:"Order ID"`
-	OrderingCustomerEmail  string `csv:"Ordering Customer Email"`
-	PurchaseOrderNumber    string `csv:"Purchase Order Number"`
-	ShipmentDate           string `csv:"Shipment Date"`
-	ShippingAddressCity    string `csv:"Shipping Address City"`
-	ShippingAddressName    string `csv:"Shipping Address Name"`
-	ShippingAddressState   string `csv:"Shipping Address State"`
-	ShippingAddressStreet1 string `csv:"Shipping Address Street 1"`
-	ShippingAddressStreet2 string `csv:"Shipping Address Street 2"`
-	ShippingAddressZip     string `csv:"Shipping Address Zip"`
-	Website                string `csv:"Website"`
+type Common struct {
+	Shipping Shipping `csv:",inline"`
+
+	ID    string `csv:"Order ID"`
+	Date  string `csv:"Order Date"`
+	Email string `csv:"Ordering Customer Email"`
+	Buyer string `csv:"Buyer Name"`
+	Group string `csv:"Group Name"`
+
+	OrderNumber string `csv:"Purchase Order Number"`
+	Website     string `csv:"Website"`
 }
 
-type AB struct {
-	CarrierNameTrackingNumber string `csv:"Carrier Name & Tracking Number"`
-	OrderStatus               string `csv:"Order Status"`
+type Shipping struct {
+	Date    string `csv:"Shipment Date"`
+	Name    string `csv:"Shipping Address Name"`
+	Street1 string `csv:"Shipping Address Street 1"`
+	Street2 string `csv:"Shipping Address Street 2"`
+	ZIP     string `csv:"Shipping Address Zip"`
+	City    string `csv:"Shipping Address City"`
+	State   string `csv:"Shipping Address State"`
+}
+
+type OrderInfo struct {
+	Status                    string `csv:"Order Status"`
 	PaymentInstrumentType     string `csv:"Payment Instrument Type"`
+	CarrierNameTrackingNumber string `csv:"Carrier Name & Tracking Number"`
 }
 
-type AC struct {
+type ItemInfo struct {
 	AsinIsbn          string `csv:"ASIN/ISBN"`
-	Category          string `csv:"Category"`
 	Quantity          string `csv:"Quantity"`
+	Title             string `csv:"Title"`
+	Category          string `csv:"Category"`
 	Seller            string `csv:"Seller"`
 	SellerCredentials string `csv:"Seller Credentials"`
-	Title             string `csv:"Title"`
 }
 
-type A struct {
-	ABC
-	AB
-	AC
+type Item struct {
+	Common
+	OrderInfo
+	ItemInfo
 
-	Condition            string `csv:"Condition"`
+	Condition   string `csv:"Condition"`
+	UnspscCode  string `csv:"UNSPSC Code"`
+	ReleaseDate string `csv:"Release Date"`
+
 	Currency             string `csv:"Currency"`
+	ListPricePerUnit     string `csv:"List Price Per Unit"`
+	PurchasePricePerUnit string `csv:"Purchase Price Per Unit"`
+	TaxExemptionApplied  string `csv:"Tax Exemption Applied"`
+	TaxExemptionType     string `csv:"Tax Exemption Type"`
 	ExemptionOptOut      string `csv:"Exemption Opt-Out"`
 	ItemSubtotal         string `csv:"Item Subtotal"`
 	ItemSubtotalTax      string `csv:"Item Subtotal Tax"`
 	ItemTotal            string `csv:"Item Total"`
-	ListPricePerUnit     string `csv:"List Price Per Unit"`
 	PoLineNumber         string `csv:"PO Line Number"`
-	PurchasePricePerUnit string `csv:"Purchase Price Per Unit"`
-	ReleaseDate          string `csv:"Release Date"`
-	TaxExemptionApplied  string `csv:"Tax Exemption Applied"`
-	TaxExemptionType     string `csv:"Tax Exemption Type"`
-	UnspscCode           string `csv:"UNSPSC Code"`
 }
 
-type B struct {
-	ABC
-	AB
+type Order struct {
+	Common
+	OrderInfo
 
 	ShippingCharge      string `csv:"Shipping Charge"`
 	Subtotal            string `csv:"Subtotal"`
@@ -66,10 +73,10 @@ type B struct {
 	TotalPromotions     string `csv:"Total Promotions"`
 }
 
-type C struct {
-	ABC
-	AC
+type Return struct {
+	Common
+	ItemInfo
 
-	ReturnDate   string `csv:"Return Date"`
-	ReturnReason string `csv:"Return Reason"`
+	Date   string `csv:"Return Date"`
+	Reason string `csv:"Return Reason"`
 }
