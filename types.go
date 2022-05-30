@@ -71,7 +71,7 @@ type OrderInfo struct {
 
 type ItemInfo struct {
 	AsinIsbn          string `csv:"ASIN/ISBN"`
-	Quantity          string `csv:"Quantity"`
+	Quantity          int    `csv:"Quantity"`
 	Title             string `csv:"Title"`
 	Category          string `csv:"Category"`
 	Seller            string `csv:"Seller"`
