@@ -1,12 +1,50 @@
 package amazon
 
+import "time"
+
 // partially generated with git.sr.ht/~mendelmaleh/csvgen
+
+type DateUS struct {
+	time.Time
+}
+
+func (d *DateUS) UnmarshalText(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	t, err := time.Parse("01/02/06", string(data))
+	if err != nil {
+		return err
+	}
+
+	d.Time = t
+	return nil
+}
+
+type DateISO struct {
+	time.Time
+}
+
+func (d *DateISO) UnmarshalText(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	t, err := time.Parse("2006-01-02T15:04:05", string(data))
+	if err != nil {
+		return err
+	}
+
+	d.Time = t
+	return nil
+}
 
 type Common struct {
 	Shipping Shipping `csv:",inline"`
 
 	ID    string `csv:"Order ID"`
-	Date  string `csv:"Order Date"`
+	Date  DateUS `csv:"Order Date"`
 	Email string `csv:"Ordering Customer Email"`
 	Buyer string `csv:"Buyer Name"`
 	Group string `csv:"Group Name"`
@@ -16,7 +54,7 @@ type Common struct {
 }
 
 type Shipping struct {
-	Date    string `csv:"Shipment Date"`
+	Date    DateUS `csv:"Shipment Date"`
 	Name    string `csv:"Shipping Address Name"`
 	Street1 string `csv:"Shipping Address Street 1"`
 	Street2 string `csv:"Shipping Address Street 2"`
@@ -45,9 +83,9 @@ type Item struct {
 	OrderInfo
 	ItemInfo
 
-	Condition   string `csv:"Condition"`
-	UnspscCode  string `csv:"UNSPSC Code"`
-	ReleaseDate string `csv:"Release Date"`
+	Condition   string  `csv:"Condition"`
+	UnspscCode  string  `csv:"UNSPSC Code"`
+	ReleaseDate DateISO `csv:"Release Date"`
 
 	Currency             string `csv:"Currency"`
 	ListPricePerUnit     string `csv:"List Price Per Unit"`
@@ -77,6 +115,6 @@ type Return struct {
 	Common
 	ItemInfo
 
-	Date   string `csv:"Return Date"`
+	Date   DateUS `csv:"Return Date"`
 	Reason string `csv:"Return Reason"`
 }
