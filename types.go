@@ -3,7 +3,10 @@ package amazon
 import (
 	"bytes"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
+	"unicode"
 )
 
 // partially generated with git.sr.ht/~mendelmaleh/csvgen
@@ -87,6 +90,44 @@ func (t *Tracking) UnmarshalText(data []byte) error {
 	return nil
 }
 
+type Currency struct {
+	Symbol string
+	Cents  int
+}
+
+func (c *Currency) UnmarshalText(data []byte) error {
+	if len(data) == 0 {
+		return nil
+	}
+
+	trimmed := strings.TrimLeftFunc(string(data), func(r rune) bool {
+		return !unicode.IsDigit(r)
+	})
+
+	if s := len(data) - len(trimmed); s > 0 {
+		c.Symbol = string(data[:s])
+	}
+
+	whole, cents, ok := strings.Cut(trimmed, ".")
+	if !ok {
+		return fmt.Errorf("error splitting wholes and cents: %q", data)
+	}
+
+	iw, err := strconv.Atoi(whole)
+	if err != nil {
+		return fmt.Errorf("error parsing wholes: %q", data)
+	}
+
+	ic, err := strconv.Atoi(cents)
+	if err != nil {
+		return fmt.Errorf("error parsing cents: %q", data)
+	}
+
+	c.Cents = iw*100 + ic
+
+	return nil
+}
+
 type OrderInfo struct {
 	Status                string   `csv:"Order Status"`
 	PaymentInstrumentType string   `csv:"Payment Instrument Type"`
@@ -111,16 +152,16 @@ type Item struct {
 	UnspscCode  string  `csv:"UNSPSC Code"`
 	ReleaseDate DateISO `csv:"Release Date"`
 
-	Currency             string `csv:"Currency"`
-	ListPricePerUnit     string `csv:"List Price Per Unit"`
-	PurchasePricePerUnit string `csv:"Purchase Price Per Unit"`
-	TaxExemptionApplied  string `csv:"Tax Exemption Applied"`
-	TaxExemptionType     string `csv:"Tax Exemption Type"`
-	ExemptionOptOut      string `csv:"Exemption Opt-Out"`
-	ItemSubtotal         string `csv:"Item Subtotal"`
-	ItemSubtotalTax      string `csv:"Item Subtotal Tax"`
-	ItemTotal            string `csv:"Item Total"`
-	PoLineNumber         string `csv:"PO Line Number"`
+	Currency             string   `csv:"Currency"`
+	ListPricePerUnit     Currency `csv:"List Price Per Unit"`
+	PurchasePricePerUnit Currency `csv:"Purchase Price Per Unit"`
+	TaxExemptionApplied  string   `csv:"Tax Exemption Applied"`
+	TaxExemptionType     string   `csv:"Tax Exemption Type"`
+	ExemptionOptOut      string   `csv:"Exemption Opt-Out"`
+	ItemSubtotal         Currency `csv:"Item Subtotal"`
+	ItemSubtotalTax      Currency `csv:"Item Subtotal Tax"`
+	ItemTotal            Currency `csv:"Item Total"`
+	PoLineNumber         string   `csv:"PO Line Number"`
 }
 
 type Order struct {
