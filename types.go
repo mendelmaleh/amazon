@@ -1,6 +1,10 @@
 package amazon
 
-import "time"
+import (
+	"bytes"
+	"fmt"
+	"time"
+)
 
 // partially generated with git.sr.ht/~mendelmaleh/csvgen
 
@@ -63,10 +67,30 @@ type Shipping struct {
 	State   string `csv:"Shipping Address State"`
 }
 
+type Tracking struct {
+	Carrier string
+	Number  string
+}
+
+func (t *Tracking) UnmarshalText(data []byte) error {
+	parts := bytes.FieldsFunc(data, func(r rune) bool {
+		return r == '(' || r == ')'
+	})
+
+	if len(parts) != 2 {
+		return fmt.Errorf("expected 2 parts from tracking, got %d", len(parts))
+	}
+
+	t.Carrier = string(parts[0])
+	t.Number = string(parts[1])
+
+	return nil
+}
+
 type OrderInfo struct {
-	Status                    string `csv:"Order Status"`
-	PaymentInstrumentType     string `csv:"Payment Instrument Type"`
-	CarrierNameTrackingNumber string `csv:"Carrier Name & Tracking Number"`
+	Status                string   `csv:"Order Status"`
+	PaymentInstrumentType string   `csv:"Payment Instrument Type"`
+	Tracking              Tracking `csv:"Carrier Name & Tracking Number"`
 }
 
 type ItemInfo struct {
