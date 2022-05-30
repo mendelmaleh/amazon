@@ -65,12 +65,12 @@ type Order struct {
 	Common
 	OrderInfo
 
-	ShippingCharge      string `csv:"Shipping Charge"`
-	Subtotal            string `csv:"Subtotal"`
-	TaxBeforePromotions string `csv:"Tax Before Promotions"`
-	TaxCharged          string `csv:"Tax Charged"`
-	TotalCharged        string `csv:"Total Charged"`
-	TotalPromotions     string `csv:"Total Promotions"`
+	ShippingCharge      Currency `csv:"Shipping Charge"`
+	Subtotal            Currency `csv:"Subtotal"`
+	TaxBeforePromotions Currency `csv:"Tax Before Promotions"`
+	TaxCharged          Currency `csv:"Tax Charged"`
+	TotalCharged        Currency `csv:"Total Charged"`
+	TotalPromotions     Currency `csv:"Total Promotions"`
 }
 
 type Return struct {
