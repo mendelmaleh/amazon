@@ -1,7 +1,6 @@
 package amazon
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -76,7 +75,7 @@ type Tracking struct {
 }
 
 func (t *Tracking) UnmarshalText(data []byte) error {
-	parts := bytes.FieldsFunc(data, func(r rune) bool {
+	parts := strings.FieldsFunc(string(data), func(r rune) bool {
 		return r == '(' || r == ')'
 	})
 
@@ -84,8 +83,8 @@ func (t *Tracking) UnmarshalText(data []byte) error {
 		return fmt.Errorf("expected 2 parts from tracking, got %d", len(parts))
 	}
 
-	t.Carrier = string(parts[0])
-	t.Number = string(parts[1])
+	t.Carrier = parts[0]
+	t.Number = parts[1]
 
 	return nil
 }
