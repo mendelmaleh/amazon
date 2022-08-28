@@ -50,6 +50,11 @@ type Tracking struct {
 }
 
 func (t *Tracking) UnmarshalText(data []byte) error {
+	// skip if empty
+	if len(data) == 0 {
+		return nil
+	}
+
 	parts := strings.FieldsFunc(string(data), func(r rune) bool {
 		return r == '(' || r == ')'
 	})
