@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/url"
@@ -10,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/gocolly/colly/v2"
 	"github.com/jszwec/csvutil"
 
@@ -68,6 +70,17 @@ func (r Result) String() string {
 }
 
 func main() {
+	// flags
+	opts := struct {
+		year int
+		file string
+	}{}
+
+	flag.IntVar(&opts.year, "y", 2021, "year filter")
+	flag.StringVar(&opts.file, "f", "items.csv", "items file path")
+	flag.Parse()
+
+	// track result processing
 	var wg sync.WaitGroup
 	defer wg.Wait()
 
@@ -75,14 +88,13 @@ func main() {
 	c := colly.NewCollector(
 		colly.Async(),
 		colly.CacheDir("cache"),
-		// colly.Debugger(&debug.LogDebugger{}),
 	)
 	defer c.Wait()
 
 	if err := c.Limit(&colly.LimitRule{
 		DomainGlob:  "*",
-		Delay:       time.Second,
-		RandomDelay: time.Second,
+		Delay:       time.Second / 5,
+		RandomDelay: time.Second / 2,
 	}); err != nil {
 		log.Fatal("error setting collector limit:", err)
 	}
@@ -113,6 +125,8 @@ func main() {
 	var mx sync.Mutex
 	items := make(map[string]Item)
 
+	bar := pb.StartNew(0)
+
 	go func() {
 		for {
 			res := <-results
@@ -120,6 +134,8 @@ func main() {
 
 			if res.Error != nil {
 				log.Printf("error visiting %q: %s", id, res.Error.Error())
+
+				bar.Add(1)
 				wg.Done()
 				continue
 			}
@@ -128,6 +144,8 @@ func main() {
 
 			// only add new items, skip duplicate results
 			if item := items[id]; !item.Done {
+				bar.Add(1)
+
 				item.Done = true
 				item.NewPrice = res.Price
 				items[id] = item
@@ -139,7 +157,7 @@ func main() {
 	}()
 
 	// parse export
-	file, err := os.ReadFile("items.csv")
+	file, err := os.ReadFile(opts.file)
 	if err != nil {
 		log.Fatal("error reading file:", err)
 	}
@@ -150,9 +168,10 @@ func main() {
 	}
 
 	// dispatch
+	var count int
 	for _, v := range raw {
 		// only 2021 items
-		if y, _, _ := v.Date.Time.Date(); y != 2021 {
+		if y, _, _ := v.Date.Time.Date(); y != opts.year {
 			continue
 		}
 
@@ -175,8 +194,11 @@ func main() {
 
 		mx.Unlock()
 
+		count++
 		c.Visit(baseurl + v.AsinIsbn)
 	}
+
+	bar.SetTotal(int64(count))
 
 	c.Wait()  // scraper
 	wg.Wait() // processor
@@ -224,7 +246,10 @@ func main() {
 		*/
 	}
 
-	fmt.Println(fmtcents(prev, false), "total 2021")
-	fmt.Println(fmtcents(now, false), "total now")
-	fmt.Printf("%s (%+d%%) difference\n", fmtcents(now-prev, true), (now-prev)*100/prev)
+	fmt.Printf(
+		"%s total %d\n%s total now\n%s (%+d%%) difference\n",
+		fmtcents(prev, false), opts.year,
+		fmtcents(now, false),
+		fmtcents(now-prev, true), (now-prev)*100/prev,
+	)
 }
